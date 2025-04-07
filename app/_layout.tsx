@@ -5,6 +5,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import AuthProvider from './providers/AuthProvider';
+import { CustomHeader } from '@/components/CustomHeader';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -19,7 +21,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      // Não escondemos a splash screen aqui, deixamos para o index.tsx
+      // SplashScreen.hideAsync();
     }
   }, [loaded]);
 
@@ -28,12 +31,27 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen 
+            name="(customer)" 
+            options={{ 
+              header: () => <CustomHeader title="Wash - Cliente" />
+            }} 
+          />
+          <Stack.Screen 
+            name="(owner)" 
+            options={{ headerShown: false }} 
+          />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
