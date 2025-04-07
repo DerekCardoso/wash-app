@@ -48,4 +48,9 @@ yarn-error.*
 logs
 *.log
 
+# Firebase
+serviceAccountKey.json
+**/serviceAccountKey.json
+firebase-adminsdk.json
+
 app-example
