@@ -50,18 +50,14 @@ export default function LoginScreen() {
 
           <TextInput
             style={styles.input}
-            placeholder="Digite sua senha..."
+            placeholder="***************"
+            placeholderTextColor="#999"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            placeholderTextColor="#999"
           />
 
           {auth?.error && <Text style={styles.errorText}>{auth.error}</Text>}
-
-          <TouchableOpacity>
-            <Text style={styles.forgotPassword}>Esqueceu a senha?</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity 
             style={[styles.loginButton, auth?.loading && styles.loginButtonDisabled]}
@@ -71,6 +67,10 @@ export default function LoginScreen() {
             <Text style={styles.loginButtonText}>
               {auth?.loading ? "ENTRANDO..." : "ACESSAR"}
             </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.replace('/(auth)/forgot-password')}>
+            <Text style={styles.forgotPassword}>Esqueceu a senha?</Text>
           </TouchableOpacity>
 
           <Text style={styles.orText}>Ou faça login com</Text>
@@ -136,6 +136,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
+  forgotPassword: {
+    color: '#2f95dc',
+    textAlign: 'right',
+    marginTop: 15,
+    marginBottom: 20,
+  },
   loginButton: {
     backgroundColor: '#2f95dc',
     borderRadius: 8,
@@ -181,10 +187,5 @@ const styles = StyleSheet.create({
   registerLink: {
     color: '#2f95dc',
     fontWeight: 'bold',
-  },
-  forgotPassword: {
-    color: '#2f95dc',
-    textAlign: 'right',
-    marginBottom: 20,
   },
 });
