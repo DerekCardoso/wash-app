@@ -1,0 +1,14 @@
+# Este arquivo define os proprietários do código que devem revisar as mudanças
+# O formato é: padrão_de_arquivo @usuário1 @usuário2
+
+# Todos os arquivos
+* @DerekCardoso
+
+# Arquivos específicos do Firebase
+/firebase/ @DerekCardoso
+/firebase-admin/ @DerekCardoso
+
+# Arquivos de configuração
+*.json @DerekCardoso
+*.config.js @DerekCardoso
+*.config.ts @DerekCardoso 
