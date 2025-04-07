@@ -1,50 +1,81 @@
-# Welcome to your Expo app 👋
+# Wash App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo mobile para gerenciamento de lava-rápidos, permitindo que clientes encontrem e agendem serviços de lavagem de veículos, e que proprietários gerenciem seus estabelecimentos.
 
-## Get started
+## Tecnologias
 
-1. Install dependencies
+- React Native
+- Expo
+- TypeScript
+- Firebase (Auth & Firestore)
+- Expo Router
 
-   ```bash
-   npm install
-   ```
+## Pré-requisitos
 
-2. Start the app
+- Node.js 18+
+- npm ou yarn
+- Expo CLI
+- Um dispositivo móvel ou emulador
 
-   ```bash
-    npx expo start
-   ```
+## Instalação
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+1. Clone o repositório
 ```bash
-npm run reset-project
+git clone [URL_DO_REPOSITÓRIO]
+cd wash
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Instale as dependências
+```bash
+npm install
+```
 
-## Learn more
+3. Configure as variáveis de ambiente
+```bash
+cp .env.example .env
+```
+Edite o arquivo `.env` com suas configurações do Firebase.
 
-To learn more about developing your project with Expo, look at the following resources:
+4. Inicie o projeto
+```bash
+npm start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Estrutura do Projeto
 
-## Join the community
+```
+wash/
+├── app/                    # Código fonte principal
+│   ├── (auth)/            # Rotas de autenticação
+│   ├── (customer)/        # Rotas do cliente
+│   ├── (owner)/          # Rotas do proprietário
+│   ├── components/        # Componentes compartilhados
+│   ├── providers/         # Providers da aplicação
+│   └── hooks/            # Hooks personalizados
+├── assets/               # Recursos estáticos
+├── constants/           # Constantes e configurações
+└── types/              # Definições de tipos
+```
 
-Join our community of developers creating universal apps.
+## Convenções
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Este projeto segue o padrão de [Conventional Commits](./COMMIT_CONVENTION.md) para mensagens de commit.
+
+## Scripts Disponíveis
+
+- `npm start`: Inicia o servidor de desenvolvimento
+- `npm run android`: Inicia o app no Android
+- `npm run ios`: Inicia o app no iOS
+- `npm run web`: Inicia o app na web
+- `npm test`: Executa os testes
+- `npm run lint`: Executa o linter
+
+## Contribuição
+
+1. Crie uma branch a partir da `dev`
+2. Faça suas alterações seguindo as convenções de commit
+3. Envie um Pull Request para a branch `dev`
+
+## Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
