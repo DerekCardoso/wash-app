@@ -1,102 +1,82 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions, Alert } from 'react-native';
-import { useAuthContext } from '@/app/providers/AuthProvider';
-import { Link } from 'expo-router';
-import { useState } from 'react';
-import { FontAwesome } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { useAuthContext } from '../providers/AuthProvider';
+import { FontAwesome } from '@expo/vector-icons';
+import { Logo } from '@/components/Logo';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { NavLink } from '@/components/NavLink';
+import { globalStyles } from '@/app/styles/global';
 
-const { width } = Dimensions.get('window');
-
-export default function LoginScreen() {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const auth = useAuthContext();
   const router = useRouter();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Erro', 'Preencha todos os campos');
-      return;
-    }
     try {
-      await auth?.login(email, password);
+      if (auth?.login) {
+        await auth.login(email, password);
+      }
     } catch (error) {
-      // O erro já é tratado no hook
+      console.error(error);
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('../../assets/images/logo azul.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+        <Logo />
 
         <View style={styles.formContainer}>
-          <TextInput
-            style={styles.input}
+          {auth?.error && <Text style={[styles.errorText, globalStyles.text]}>{auth.error}</Text>}
+
+          <Input
             placeholder="Digite seu E-mail..."
-            placeholderTextColor="#999"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
           />
 
-          <TextInput
-            style={styles.input}
-            placeholder="***************"
-            placeholderTextColor="#999"
+          <Input
+            placeholder="Digite sua senha..."
             value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
 
-          {auth?.error && <Text style={styles.errorText}>{auth.error}</Text>}
-
-          <TouchableOpacity 
-            style={[styles.loginButton, auth?.loading && styles.loginButtonDisabled]}
+          <Button 
+            title="ENTRAR"
             onPress={handleLogin}
             disabled={auth?.loading}
-          >
-            <Text style={styles.loginButtonText}>
-              {auth?.loading ? "ENTRANDO..." : "ACESSAR"}
-            </Text>
-          </TouchableOpacity>
+          />
 
           <TouchableOpacity onPress={() => router.replace('/(auth)/forgot-password')}>
-            <Text style={styles.forgotPassword}>Esqueceu a senha?</Text>
+            <Text style={[styles.forgotPassword, globalStyles.textMedium]}>Esqueceu a senha?</Text>
           </TouchableOpacity>
 
-          <Text style={styles.orText}>Ou faça login com</Text>
+          <Text style={[styles.orText, globalStyles.text]}>Ou faça login com</Text>
 
-          <View style={styles.socialContainer}>
-            <TouchableOpacity style={styles.socialButton}>
-              <FontAwesome name="facebook" size={24} color="#4267B2" />
-            </TouchableOpacity>
-
+          <View style={styles.socialButtons}>
             <TouchableOpacity style={styles.socialButton}>
               <FontAwesome name="google" size={24} color="#DB4437" />
             </TouchableOpacity>
-
             <TouchableOpacity style={styles.socialButton}>
-              <FontAwesome name="twitter" size={24} color="#1DA1F2" />
+              <FontAwesome name="facebook" size={24} color="#4267B2" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialButton}>
+              <FontAwesome name="apple" size={24} color="#000" />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Ainda não possui conta? </Text>
-            <Link href="/(auth)/register" asChild>
-              <TouchableOpacity>
-                <Text style={styles.registerLink}>Cadastre-se</Text>
-              </TouchableOpacity>
-            </Link>
-          </View>
+          <NavLink 
+            text="Não possui uma conta?"
+            linkText="Cadastre-se"
+            route="/(auth)/register"
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -112,29 +92,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  logoContainer: {
-    alignItems: 'center',
-    marginTop: 60,
-    marginBottom: 40,
-  },
-  logo: {
-    width: width * 0.5,
-    height: width * 0.5,
-  },
   formContainer: {
     paddingHorizontal: 20,
   },
-  input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
-  },
   errorText: {
-    color: 'red',
-    marginBottom: 10,
+    color: '#ff4444',
     textAlign: 'center',
+    marginBottom: 15,
   },
   forgotPassword: {
     color: '#2f95dc',
@@ -142,30 +106,16 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 20,
   },
-  loginButton: {
-    backgroundColor: '#2f95dc',
-    borderRadius: 8,
-    padding: 15,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  loginButtonDisabled: {
-    opacity: 0.7,
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   orText: {
     textAlign: 'center',
     color: '#666',
     marginBottom: 20,
   },
-  socialContainer: {
+  socialButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 30,
+    gap: 20,
+    marginBottom: 20,
   },
   socialButton: {
     width: 50,
@@ -174,18 +124,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 10,
-  },
-  registerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  registerText: {
-    color: '#666',
-  },
-  registerLink: {
-    color: '#2f95dc',
-    fontWeight: 'bold',
   },
 });

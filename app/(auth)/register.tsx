@@ -3,6 +3,7 @@ import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { useAuthContext } from '../providers/AuthProvider';
 import { Ionicons } from '@expo/vector-icons';
+import { globalStyles } from '@/app/styles/global';
 
 const { width } = Dimensions.get('window');
 
@@ -49,7 +50,7 @@ export default function Register() {
 
         <View style={styles.formContainer}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, globalStyles.text]}
             placeholder="Digite seu nome completo..."
             value={name}
             onChangeText={setName}
@@ -57,7 +58,7 @@ export default function Register() {
           />
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, globalStyles.text]}
             placeholder="Digite seu E-mail..."
             value={email}
             onChangeText={setEmail}
@@ -67,7 +68,7 @@ export default function Register() {
           />
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, globalStyles.text]}
             placeholder="Digite sua senha..."
             value={password}
             onChangeText={setPassword}
@@ -76,7 +77,7 @@ export default function Register() {
           />
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, globalStyles.text]}
             placeholder="Confirme sua senha..."
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -88,20 +89,20 @@ export default function Register() {
             style={styles.loginButton}
             onPress={handleRegister}
           >
-            <Text style={styles.loginButtonText}>CADASTRAR</Text>
+            <Text style={[styles.loginButtonText, globalStyles.textBold]}>CADASTRAR</Text>
           </TouchableOpacity>
 
           <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Cadastre-se como </Text>
+            <Text style={[styles.registerText, globalStyles.text]}>Cadastre-se como </Text>
             <TouchableOpacity onPress={() => router.replace('/(auth)/register-owner' as any)}>
-              <Text style={styles.registerLink}>proprietário</Text>
+              <Text style={[styles.registerLink, globalStyles.textBold]}>proprietário</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Já possui uma conta? </Text>
+            <Text style={[styles.registerText, globalStyles.text]}>Já possui uma conta? </Text>
             <TouchableOpacity onPress={() => router.replace('/(auth)/login' as any)}>
-              <Text style={styles.registerLink}>Faça o login</Text>
+              <Text style={[styles.registerLink, globalStyles.textBold]}>Faça o login</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -154,7 +155,6 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
   },
   registerContainer: {
     flexDirection: 'row',
@@ -166,6 +166,5 @@ const styles = StyleSheet.create({
   },
   registerLink: {
     color: '#2f95dc',
-    fontWeight: 'bold',
   },
 });

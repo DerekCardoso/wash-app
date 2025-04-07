@@ -10,9 +10,13 @@ export default function Index() {
   const [isReady, setIsReady] = useState(false);
 
   const handleAnimationComplete = () => {
-    // Redireciona para a tela apropriada baseado no estado de autenticação
+    // Redireciona para a tela apropriada baseado no estado de autenticação e tipo de usuário
     if (user) {
-      router.replace('/(customer)/home');
+      if (user.userType === 'owner') {
+        router.replace('/(owner)/home');
+      } else {
+        router.replace('/(customer)/home');
+      }
     } else {
       router.replace('/(auth)/login');
     }

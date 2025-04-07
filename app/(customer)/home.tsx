@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Link, router } from 'expo-router';
-import { useAuthContext } from '../providers/AuthProvider';
+import { useRouter } from 'expo-router';
+import { useAuthContext } from '@/app/providers/AuthProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { globalStyles } from '@/app/styles/global';
 
 export default function CustomerHome() {
   const { user = null, logout } = useAuthContext() ?? { user: null, logout: undefined };
+  const router = useRouter();
 
   const handleLogout = async () => {
     try {
@@ -14,18 +16,18 @@ export default function CustomerHome() {
         router.replace('/(auth)/login');
       }
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
+      console.error(error);
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.headerInfo}>
-              <Text style={styles.welcomeText}>Bem-vindo, {user?.displayName || 'Cliente'}!</Text>
-              <Text style={styles.emailText}>{user?.email}</Text>
+              <Text style={[styles.welcomeText, globalStyles.textBold]}>Bem-vindo(a), {user?.name || 'Cliente'}!</Text>
+              <Text style={[styles.emailText, globalStyles.text]}>{user?.email}</Text>
             </View>
             <TouchableOpacity 
               style={styles.logoutButton}
@@ -36,32 +38,11 @@ export default function CustomerHome() {
           </View>
         </View>
 
-        <View style={styles.menuContainer}>
-          <Link href="/(customer)/carwashes" asChild>
-            <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="car-outline" size={32} color="#2f95dc" />
-              <Text style={styles.menuText}>Lava-Rápidos</Text>
-              <Text style={styles.menuDescription}>Encontre lava-rápidos próximos</Text>
-            </TouchableOpacity>
-          </Link>
-
-          <Link href="/(customer)/orders" asChild>
-            <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="list-outline" size={32} color="#2f95dc" />
-              <Text style={styles.menuText}>Meus Pedidos</Text>
-              <Text style={styles.menuDescription}>Acompanhe seus pedidos</Text>
-            </TouchableOpacity>
-          </Link>
-
-          <Link href="/(customer)/home" asChild>
-            <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="person-outline" size={32} color="#2f95dc" />
-              <Text style={styles.menuText}>Meu Perfil</Text>
-              <Text style={styles.menuDescription}>Gerencie suas informações</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
-      </ScrollView>
+        <ScrollView style={styles.content}>
+          <Text style={[styles.title, globalStyles.textBold]}>Meus Agendamentos</Text>
+          {/* TODO: Adicionar lista de agendamentos */}
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -73,63 +54,41 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
   header: {
+    backgroundColor: '#2f95dc',
     padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   headerTop: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerInfo: {
     flex: 1,
   },
-  logoutButton: {
-    padding: 5,
-    marginLeft: 15,
-  },
   welcomeText: {
     fontSize: 24,
-    fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 5,
   },
   emailText: {
     fontSize: 16,
-    color: '#666',
+    color: '#fff',
   },
-  menuContainer: {
-    padding: 20,
-  },
-  menuItem: {
+  logoutButton: {
     backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    marginBottom: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  menuText: {
-    fontSize: 18,
-    fontWeight: '600',
+    padding: 10,
+    borderRadius: 20,
     marginLeft: 15,
+  },
+  content: {
     flex: 1,
+    padding: 20,
   },
-  menuDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 15,
+  title: {
+    fontSize: 20,
+    marginBottom: 20,
   },
 }); 

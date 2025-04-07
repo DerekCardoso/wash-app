@@ -3,6 +3,7 @@ import { Text } from './Themed';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';
+import { globalStyles } from '@/app/styles/global';
 
 interface CustomHeaderProps {
   title: string;
@@ -23,10 +24,10 @@ export function CustomHeader({ title }: CustomHeaderProps) {
 
   return (
     <View style={styles.header}>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[styles.title, globalStyles.textBold]}>{title}</Text>
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
         <Ionicons name="log-out-outline" size={24} color="#FF4444" />
-        <Text style={styles.logoutText}>Sair</Text>
+        <Text style={[styles.logoutText, globalStyles.textMedium]}>Sair</Text>
       </TouchableOpacity>
     </View>
   );
@@ -44,7 +45,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
   },
   logoutButton: {
     flexDirection: 'row',
@@ -54,6 +54,5 @@ const styles = StyleSheet.create({
   logoutText: {
     color: '#FF4444',
     fontSize: 16,
-    fontWeight: '500',
   },
 }); 
