@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { useAuthContext } from '../providers/AuthProvider';
@@ -12,15 +12,46 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { register } = useAuthContext() ?? {};
+  const [error, setError] = useState<string | null>(null);
+  const { register, loading } = useAuthContext() ?? {};
+
+  const validateForm = () => {
+    if (!name.trim()) {
+      setError('Por favor, informe seu nome');
+      return false;
+    }
+    if (!email.trim()) {
+      setError('Por favor, informe seu e-mail');
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Por favor, informe um e-mail válido');
+      return false;
+    }
+    if (!password) {
+      setError('Por favor, informe sua senha');
+      return false;
+    }
+    if (password.length < 8) {
+      setError('A senha deve ter pelo menos 8 caracteres');
+      return false;
+    }
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem');
+      return false;
+    }
+    return true;
+  };
 
   const handleRegister = async () => {
-    if (password !== confirmPassword) {
-      // TODO: Mostrar erro de senhas diferentes
-      return;
-    }
-
     try {
+      setError(null);
+      
+      if (!validateForm()) {
+        return;
+      }
+
       if (register) {
         await register({
           email,
@@ -30,15 +61,14 @@ export default function Register() {
         });
         router.replace('/(customer)/home');
       }
-    } catch (error) {
-      console.error(error);
-      // TODO: Mostrar erro de registro
+    } catch (error: any) {
+      console.error('Erro no registro:', error);
+      setError(error.message || 'Erro ao realizar cadastro');
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-
       <View style={styles.container}>
         <View style={styles.logoContainer}>
           <Image
@@ -49,12 +79,20 @@ export default function Register() {
         </View>
 
         <View style={styles.formContainer}>
+          {error && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={20} color="#dc3545" style={styles.errorIcon} />
+              <Text style={[styles.errorText, globalStyles.text]}>{error}</Text>
+            </View>
+          )}
+
           <TextInput
             style={[styles.input, globalStyles.text]}
             placeholder="Digite seu nome completo..."
             value={name}
             onChangeText={setName}
             placeholderTextColor="#999"
+            autoCapitalize="words"
           />
 
           <TextInput
@@ -76,6 +114,8 @@ export default function Register() {
             placeholderTextColor="#999"
           />
 
+          <Text style={[styles.passwordHint, globalStyles.text]}>A senha deve ter pelo menos 8 caracteres</Text>
+
           <TextInput
             style={[styles.input, globalStyles.text]}
             placeholder="Confirme sua senha..."
@@ -86,10 +126,15 @@ export default function Register() {
           />
 
           <TouchableOpacity 
-            style={styles.loginButton}
+            style={[styles.loginButton, loading && styles.disabledButton]}
             onPress={handleRegister}
+            disabled={loading}
           >
-            <Text style={[styles.loginButtonText, globalStyles.textBold]}>CADASTRAR</Text>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={[styles.loginButtonText, globalStyles.textBold]}>CADASTRAR</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.registerContainer}>
@@ -138,12 +183,34 @@ const styles = StyleSheet.create({
   formContainer: {
     paddingHorizontal: 20,
   },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffebee',
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 15,
+  },
+  errorIcon: {
+    marginRight: 10,
+  },
+  errorText: {
+    color: '#dc3545',
+    flex: 1,
+  },
   input: {
     backgroundColor: '#f5f5f5',
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
+  },
+  passwordHint: {
+    color: '#666',
+    fontSize: 14,
+    marginTop: -10,
+    marginBottom: 15,
+    paddingHorizontal: 5,
   },
   loginButton: {
     backgroundColor: '#2f95dc',
@@ -152,6 +219,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  disabledButton: {
+    opacity: 0.7,
+  },
   loginButtonText: {
     color: '#fff',
     fontSize: 16,
@@ -159,12 +229,15 @@ const styles = StyleSheet.create({
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    alignItems: 'center',
+    marginBottom: 15,
   },
   registerText: {
     color: '#666',
+    fontSize: 16,
   },
   registerLink: {
     color: '#2f95dc',
+    fontSize: 16,
   },
 });
