@@ -1,8 +1,9 @@
+import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { globalStyles } from '@/app/styles/global';
 
 interface ButtonProps {
-  title: string;
+  title: React.ReactNode;
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'outline';
   style?: ViewStyle;
@@ -29,15 +30,19 @@ export function Button({
       onPress={onPress}
       disabled={disabled}
     >
-      <Text style={[
-        styles.buttonText,
-        styles[`${variant}ButtonText`],
-        disabled && styles.disabledButtonText,
-        globalStyles.textBold,
-        textStyle
-      ]}>
-        {title}
-      </Text>
+      {typeof title === 'string' ? (
+        <Text style={[
+          styles.buttonText,
+          styles[`${variant}ButtonText`],
+          disabled && styles.disabledButtonText,
+          globalStyles.textBold,
+          textStyle
+        ]}>
+          {title}
+        </Text>
+      ) : (
+        title
+      )}
     </TouchableOpacity>
   );
 }
