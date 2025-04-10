@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthContext } from '@/app/providers/AuthProvider';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { globalStyles } from '@/app/styles/global';
 
 export default function OwnerDashboard() {
   const { user, logout } = useAuthContext() ?? {};
+  const router = useRouter();
 
   const handleLogout = async () => {
     try {
@@ -74,49 +76,49 @@ export default function OwnerDashboard() {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.headerInfo}>
-              <Text style={styles.welcomeText}>Bem-vindo(a), {user?.displayName || 'Dono'}!</Text>
-              <Text style={styles.emailText}>{user?.email}</Text>
+              <Text style={[styles.welcomeText, globalStyles.textBold]}>Bem-vindo(a), {user?.name || 'Dono'}!</Text>
+              <Text style={[styles.emailText, globalStyles.text]}>{user?.email}</Text>
             </View>
             <TouchableOpacity 
               style={styles.logoutButton}
               onPress={handleLogout}
             >
-              <Ionicons name="exit-outline" size={24} color="#2f95dc" />
+              <Text style={[styles.logoutText, globalStyles.textBold]}>Sair</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         <ScrollView style={styles.content}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Agendamentos do Dia</Text>
+            <Text style={[styles.sectionTitle, globalStyles.textBold]}>Agendamentos do Dia</Text>
             {appointments.map((appointment) => (
               <View key={appointment.id} style={styles.appointmentCard}>
                 <View style={styles.appointmentHeader}>
-                  <Text style={styles.customerName}>{appointment.customerName}</Text>
+                  <Text style={[styles.customerName, globalStyles.textBold]}>{appointment.customerName}</Text>
                   <View style={[styles.statusBadge, { backgroundColor: getStatusColor(appointment.status) }]}>
-                    <Text style={styles.statusText}>{getStatusText(appointment.status)}</Text>
+                    <Text style={[styles.statusText, globalStyles.text]}>{getStatusText(appointment.status)}</Text>
                   </View>
                 </View>
                 <View style={styles.appointmentDetails}>
                   <View style={styles.detailRow}>
                     <Ionicons name="car-outline" size={16} color="#666" />
-                    <Text style={styles.detailText}>{appointment.service}</Text>
+                    <Text style={[styles.detailText, globalStyles.text]}>{appointment.service}</Text>
                   </View>
                   <View style={styles.detailRow}>
                     <Ionicons name="calendar-outline" size={16} color="#666" />
-                    <Text style={styles.detailText}>{appointment.date}</Text>
+                    <Text style={[styles.detailText, globalStyles.text]}>{appointment.date}</Text>
                   </View>
                   <View style={styles.detailRow}>
                     <Ionicons name="time-outline" size={16} color="#666" />
-                    <Text style={styles.detailText}>{appointment.time}</Text>
+                    <Text style={[styles.detailText, globalStyles.text]}>{appointment.time}</Text>
                   </View>
                 </View>
                 <View style={styles.actionButtons}>
                   <TouchableOpacity style={[styles.actionButton, styles.confirmButton]}>
-                    <Text style={styles.actionButtonText}>Confirmar</Text>
+                    <Text style={[styles.actionButtonText, globalStyles.textBold]}>Confirmar</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={[styles.actionButton, styles.cancelButton]}>
-                    <Text style={[styles.actionButtonText, styles.cancelButtonText]}>Cancelar</Text>
+                    <Text style={[styles.actionButtonText, styles.cancelButtonText, globalStyles.textBold]}>Cancelar</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -153,7 +155,6 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 24,
-    fontWeight: 'bold',
     marginBottom: 5,
   },
   emailText: {
@@ -164,6 +165,9 @@ const styles = StyleSheet.create({
     padding: 5,
     marginLeft: 15,
   },
+  logoutText: {
+    color: '#2f95dc',
+  },
   content: {
     flex: 1,
   },
@@ -172,7 +176,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
     marginBottom: 15,
     color: '#333',
   },
@@ -197,18 +200,15 @@ const styles = StyleSheet.create({
   },
   customerName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 12,
   },
   statusText: {
-    color: '#fff',
     fontSize: 12,
-    fontWeight: 'bold',
+    color: '#fff',
   },
   appointmentDetails: {
     marginBottom: 15,
@@ -219,37 +219,33 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   detailText: {
-    marginLeft: 8,
-    color: '#666',
     fontSize: 14,
+    color: '#666',
+    marginLeft: 8,
   },
   actionButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
+    justifyContent: 'flex-end',
+    gap: 10,
   },
   actionButton: {
-    flex: 1,
+    paddingHorizontal: 15,
     paddingVertical: 8,
-    paddingHorizontal: 12,
     borderRadius: 8,
-    marginHorizontal: 5,
   },
   confirmButton: {
-    backgroundColor: '#2f95dc',
+    backgroundColor: '#4CAF50',
   },
   cancelButton: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
     borderWidth: 1,
-    borderColor: '#ff4444',
+    borderColor: '#e0e0e0',
   },
   actionButtonText: {
-    color: '#fff',
-    textAlign: 'center',
     fontSize: 14,
-    fontWeight: 'bold',
+    color: '#fff',
   },
   cancelButtonText: {
-    color: '#ff4444',
+    color: '#666',
   },
 }); 

@@ -1,102 +1,155 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Dimensions, Alert } from 'react-native';
-import { useAuthContext } from '@/app/providers/AuthProvider';
-import { Link } from 'expo-router';
-import { useState } from 'react';
-import { FontAwesome } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useAuthContext } from '../providers/AuthProvider';
+import { FontAwesome } from '@expo/vector-icons';
+import { Logo } from '@/components/Logo';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { NavLink } from '@/components/NavLink';
+import { globalStyles } from '@/app/styles/global';
+import { useAuth } from '@/hooks/useAuth';
+import { Toast } from '@/components/Toast';
 
-const { width } = Dimensions.get('window');
-
-export default function LoginScreen() {
+export default function Login() {
+  const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const auth = useAuthContext();
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('error');
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+  });
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const showErrorToast = (message: string) => {
+    setToastMessage(message);
+    setToastType('error');
+    setShowToast(true);
+  };
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Erro', 'Preencha todos os campos');
-      return;
-    }
+    setLoading(true);
     try {
-      await auth?.login(email, password);
-    } catch (error) {
-      // O erro já é tratado no hook
+      await login(email, password);
+      router.replace('/(customer)/home');
+    } catch (error: any) {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        showErrorToast('Email ou senha inválidos');
+        setErrors({
+          ...errors,
+          email: 'Email ou senha inválidos',
+          password: 'Email ou senha inválidos',
+        });
+      } else {
+        showErrorToast('Erro ao fazer login');
+        setErrors({
+          ...errors,
+          email: 'Erro ao fazer login',
+          password: 'Erro ao fazer login',
+        });
+      }
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const isFormValid = () => {
+    return (
+      email.length > 0 &&
+      password.length > 0 &&
+      validateEmail(email) &&
+      !errors.email &&
+      !errors.password
+    );
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('../../assets/images/logo azul.png')}
-            style={styles.logo}
-            resizeMode="contain"
+        <Logo />
+
+        {showToast && (
+          <Toast
+            message={toastMessage}
+            type={toastType}
+            onClose={() => setShowToast(false)}
           />
-        </View>
+        )}
 
         <View style={styles.formContainer}>
-          <TextInput
-            style={styles.input}
+          {useAuthContext()?.error && <Text style={[styles.errorText, globalStyles.text]}>{useAuthContext().error}</Text>}
+
+          <Input
             placeholder="Digite seu E-mail..."
-            placeholderTextColor="#999"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setErrors({ ...errors, email: '' });
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
+            error={errors.email}
+            onBlur={() => {
+              if (email && !validateEmail(email)) {
+                setErrors({ ...errors, email: 'Email inválido' });
+              }
+            }}
           />
 
-          <TextInput
-            style={styles.input}
+          <Input
             placeholder="Digite sua senha..."
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setErrors({ ...errors, password: '' });
+            }}
             secureTextEntry
-            placeholderTextColor="#999"
+            error={errors.password}
           />
 
-          {auth?.error && <Text style={styles.errorText}>{auth.error}</Text>}
-
-          <TouchableOpacity>
-            <Text style={styles.forgotPassword}>Esqueceu a senha?</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.loginButton, auth?.loading && styles.loginButtonDisabled]}
-            onPress={handleLogin}
-            disabled={auth?.loading}
+          <TouchableOpacity
+            style={styles.forgotPassword}
+            onPress={() => router.push('/(auth)/forgot-password')}
           >
-            <Text style={styles.loginButtonText}>
-              {auth?.loading ? "ENTRANDO..." : "ACESSAR"}
+            <Text style={[styles.forgotPasswordText, globalStyles.textMedium]}>
+              Esqueceu sua senha?
             </Text>
           </TouchableOpacity>
 
-          <Text style={styles.orText}>Ou faça login com</Text>
+          <Button
+            title={loading ? <ActivityIndicator color="#fff" /> : "Entrar"}
+            onPress={handleLogin}
+            disabled={!isFormValid() || loading}
+          />
 
-          <View style={styles.socialContainer}>
-            <TouchableOpacity style={styles.socialButton}>
-              <FontAwesome name="facebook" size={24} color="#4267B2" />
-            </TouchableOpacity>
+          <Text style={[styles.orText, globalStyles.text]}>Ou faça login com</Text>
 
+          <View style={styles.socialButtons}>
             <TouchableOpacity style={styles.socialButton}>
               <FontAwesome name="google" size={24} color="#DB4437" />
             </TouchableOpacity>
-
             <TouchableOpacity style={styles.socialButton}>
-              <FontAwesome name="twitter" size={24} color="#1DA1F2" />
+              <FontAwesome name="facebook" size={24} color="#4267B2" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialButton}>
+              <FontAwesome name="apple" size={24} color="#000" />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Ainda não possui conta? </Text>
-            <Link href="/(auth)/register" asChild>
-              <TouchableOpacity>
-                <Text style={styles.registerLink}>Cadastre-se</Text>
-              </TouchableOpacity>
-            </Link>
-          </View>
+          <NavLink 
+            text="Não possui uma conta?"
+            linkText="Cadastre-se"
+            route="/(auth)/register"
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -112,54 +165,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  logoContainer: {
-    alignItems: 'center',
-    marginTop: 60,
-    marginBottom: 40,
-  },
-  logo: {
-    width: width * 0.5,
-    height: width * 0.5,
-  },
   formContainer: {
     paddingHorizontal: 20,
   },
-  input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
-  },
   errorText: {
-    color: 'red',
-    marginBottom: 10,
+    color: '#ff4444',
     textAlign: 'center',
+    marginBottom: 15,
   },
-  loginButton: {
-    backgroundColor: '#2f95dc',
-    borderRadius: 8,
-    padding: 15,
-    alignItems: 'center',
+  forgotPassword: {
+    alignSelf: 'flex-end',
     marginBottom: 20,
   },
-  loginButtonDisabled: {
-    opacity: 0.7,
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  forgotPasswordText: {
+    color: '#007AFF',
   },
   orText: {
     textAlign: 'center',
     color: '#666',
     marginBottom: 20,
   },
-  socialContainer: {
+  socialButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 30,
+    gap: 20,
+    marginBottom: 20,
   },
   socialButton: {
     width: 50,
@@ -168,23 +198,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 10,
   },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 20,
+    gap: 4,
   },
   registerText: {
     color: '#666',
   },
   registerLink: {
-    color: '#2f95dc',
-    fontWeight: 'bold',
-  },
-  forgotPassword: {
-    color: '#2f95dc',
-    textAlign: 'right',
-    marginBottom: 20,
+    color: '#007AFF',
   },
 });

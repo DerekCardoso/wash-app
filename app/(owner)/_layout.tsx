@@ -1,10 +1,14 @@
 import { Stack } from 'expo-router';
-import { CustomHeader } from '@/components/CustomHeader';
+import { KeyboardAvoidingView } from '@/components/KeyboardAvoidingView';
 
 export default function OwnerLayout() {
   return (
-    <Stack screenOptions={{
-      headerShown: false,
-    }} />
+    <KeyboardAvoidingView>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
+    </KeyboardAvoidingView>
   );
 } 

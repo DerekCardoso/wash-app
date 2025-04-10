@@ -1,10 +1,8 @@
+import { AppUser } from './user';
+
 export type UserType = 'customer' | 'owner';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  userType: UserType;
+export interface User extends AppUser {
   createdAt: Date;
 }
 
