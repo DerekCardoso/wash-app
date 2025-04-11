@@ -7,15 +7,20 @@ import { Button } from '@/components/Button';
 import { Toast } from '@/components/Toast';
 import { Stepper } from '@/components/Stepper';
 import { ImagePickerComponent } from '@/components/ImagePicker';
+import { PhoneInput } from '@/components/PhoneInput';
 import { globalStyles } from '@/app/styles/global';
 import { Ionicons } from '@expo/vector-icons';
 import { Logo } from '@/components/Logo';
+import { useValidation } from '@/hooks/useValidation';
 
 const steps = [
   'Dados Pessoais',
   'Dados do Lava-Rápido',
   'Localização',
 ];
+
+const emailRegex = /.+@.+\..+/;
+const validateEmail = (email: string) => emailRegex.test(email);
 
 export default function RegisterOwner() {
   const router = useRouter();
@@ -44,11 +49,15 @@ export default function RegisterOwner() {
   const [state, setState] = useState('');
   const [zipCode, setZipCode] = useState('');
 
+  const emailValidation = useValidation(validateEmail);
+
   const showErrorToast = (message: string) => {
     setToastMessage(message);
     setToastType('error');
     setShowToast(true);
   };
+
+  const passwordsMatch = password === confirmPassword && password.length > 0;
 
   const validateStep = () => {
     switch (currentStep) {
@@ -61,8 +70,8 @@ export default function RegisterOwner() {
           showErrorToast('As senhas não coincidem');
           return false;
         }
-        if (password.length < 6) {
-          showErrorToast('A senha deve ter no mínimo 6 caracteres');
+        if (!validateEmail(email)) {
+          showErrorToast('E-mail inválido');
           return false;
         }
         return true;
@@ -120,19 +129,26 @@ export default function RegisterOwner() {
               placeholder="Nome completo"
               value={name}
               onChangeText={setName}
+              autoCapitalize="words"
             />
             <Input
               placeholder="E-mail"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                emailValidation.validate(text);
+              }}
               keyboardType="email-address"
               autoCapitalize="none"
+              validation={email.length > 2 ? {
+                icon: emailValidation.getStatusIcon(emailValidation.validation.status),
+                message: emailValidation.validation.message,
+                color: emailValidation.getStatusColor(emailValidation.validation.status),
+              } : undefined}
             />
-            <Input
-              placeholder="Telefone"
+            <PhoneInput
               value={phone}
               onChangeText={setPhone}
-              keyboardType="phone-pad"
             />
             <Input
               placeholder="Senha"
@@ -145,6 +161,12 @@ export default function RegisterOwner() {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
+              validateOnBlur
+              validation={confirmPassword.length > 0 ? {
+                icon: passwordsMatch ? '✅' : '❌',
+                message: passwordsMatch ? 'Senhas conferem!' : 'Senhas não conferem',
+                color: passwordsMatch ? '#4CAF50' : '#F44336',
+              } : undefined}
             />
           </>
         );
@@ -217,6 +239,7 @@ export default function RegisterOwner() {
           <Button
             title={currentStep === steps.length - 1 ? 'Finalizar' : 'Próximo'}
             onPress={handleNextStep}
+            loading={loading}
           />
         </ScrollView>
         <Toast

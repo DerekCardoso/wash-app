@@ -44,9 +44,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen 
             name="(customer)" 
-            options={{ 
-              header: () => <CustomHeader title="Wash - Cliente" />
-            }} 
+            options={{ headerShown: false }} 
           />
           <Stack.Screen 
             name="(owner)" 

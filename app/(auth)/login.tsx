@@ -75,7 +75,7 @@ export default function Login() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Logo />
+        <Logo size="large" />
 
         {showToast && (
           <Toast

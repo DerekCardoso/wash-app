@@ -99,7 +99,7 @@ export function useAuth() {
         name,
         email,
         userType,
-        companyName,
+        ...(userType === 'owner' ? { companyName } : {}),
         createdAt: new Date()
       });
       
@@ -143,7 +143,20 @@ export function useAuth() {
       setSuccess(null);
       setLoading(true);
 
-      await signInWithEmailAndPassword(auth, email, password);
+      const { user: firebaseUser } = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Buscar dados do usuário no Firestore
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUser({
+          id: firebaseUser.uid,
+          email: firebaseUser.email!,
+          name: userData.name,
+          userType: userData.userType,
+        });
+      }
+      
       setSuccess('Login realizado com sucesso!');
     } catch (error: any) {
       let errorMessage = 'Erro ao realizar login';
