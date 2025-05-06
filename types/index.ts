@@ -24,6 +24,20 @@ export interface Vehicle {
   ownerId: string;
 }
 
+export interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
+export interface Address {
+  street: string;
+  number: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  coordinates: Coordinates;
+}
+
 export interface CarWash {
   id: string;
   name: string;

@@ -63,17 +63,17 @@ export function SubmissionModal({
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.button,
                 isSuccess ? styles.successButton : styles.errorButton
               ]}
               onPress={onClose}
-              accessibilityLabel={isSuccess ? "Fechar modal de sucesso" : "Fechar modal de erro"}
               accessibilityRole="button"
+              accessibilityLabel={isSuccess ? "Fechar" : "Tentar novamente"}
             >
-              <Text style={[styles.buttonText, globalStyles.textBold]}>
-                {isSuccess ? 'OK' : 'Fechar'}
+              <Text style={styles.buttonText}>
+                {isSuccess ? "Fechar" : "Tentar novamente"}
               </Text>
             </TouchableOpacity>
           </View>

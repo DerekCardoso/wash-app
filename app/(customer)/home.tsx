@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +13,8 @@ import { ServicePill } from '@/components/ServicePill';
 import { CarWashCard } from '@/components/CarWashCard';
 import { HistoryPreview } from '@/components/HistoryPreview';
 import { UserAppBar } from '@/components/UserAppBar';
+import { AddressEditor } from '@/components/AddressEditor';
+import { useLocation } from '@/hooks/useLocation';
 import type { Href } from 'expo-router';
 
 // Dados mockados para exemplo
@@ -62,6 +64,66 @@ const mockCarWashes = [
     isPremium: true,
     services: ['Completa', 'Higienização'],
   },
+  {
+    id: '3',
+    name: 'LavaRápido do João',
+    image: 'https://example.com/carwash3.jpg',
+    rating: 4.5,
+    distance: '0.8 km',
+    isOpen: true,
+    isPremium: false,
+    services: ['Expressa', 'Completa'],
+  },
+  {
+    id: '4',
+    name: 'LavaCar Express',
+    image: 'https://example.com/carwash4.jpg',
+    rating: 4.3,
+    distance: '1.5 km',
+    isOpen: true,
+    isPremium: false,
+    services: ['Expressa', 'Higienização'],
+  },
+  {
+    id: '5',
+    name: 'LavaRápido do Zé',
+    image: 'https://example.com/carwash5.jpg',
+    rating: 4.8,
+    distance: '0.7 km',
+    isOpen: true,
+    isPremium: true,
+    services: ['Expressa', 'Completa', 'Higienização'],
+  },
+  {
+    id: '6',
+    name: 'AutoLava Premium',
+    image: 'https://example.com/carwash6.jpg',
+    rating: 4.6,
+    distance: '1.0 km',
+    isOpen: true,
+    isPremium: true,
+    services: ['Completa', 'Higienização', 'Polimento'],
+  },
+  {
+    id: '7',
+    name: 'LavaCar do Bairro',
+    image: 'https://example.com/carwash7.jpg',
+    rating: 4.4,
+    distance: '0.9 km',
+    isOpen: true,
+    isPremium: false,
+    services: ['Expressa', 'Completa'],
+  },
+  {
+    id: '8',
+    name: 'LavaJet do Centro',
+    image: 'https://example.com/carwash8.jpg',
+    rating: 4.2,
+    distance: '1.3 km',
+    isOpen: true,
+    isPremium: false,
+    services: ['Expressa', 'Higienização'],
+  },
 ];
 
 const mockLastOrder = {
@@ -75,6 +137,8 @@ export default function CustomerHome() {
   const { user = null } = useAuthContext() ?? { user: null };
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [isAddressEditorVisible, setIsAddressEditorVisible] = useState(false);
+  const { address, loading: locationLoading, error: locationError } = useLocation();
   const [activeOrder, setActiveOrder] = useState({
     id: 'XYZ123',
     status: 'washing' as const,
@@ -92,15 +156,36 @@ export default function CustomerHome() {
     }, 1000);
   }, []);
 
+  const handleSaveAddress = (address: {
+    street: string;
+    number: string;
+    complement?: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+  }) => {
+    // TODO: Implementar salvamento do endereço
+    console.log('Novo endereço:', address);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {/* App Bar Superior */}
         <View style={styles.appBar}>
-          <View style={styles.locationContainer}>
+          <TouchableOpacity 
+            style={styles.locationContainer}
+            onPress={() => setIsAddressEditorVisible(true)}
+          >
             <MaterialIcons name="location-pin" size={20} color="#4A90E2" />
-            <Text style={styles.address}>Av. Paulista, 1000 • Alterar</Text>
-          </View>
+            {locationLoading ? (
+              <ActivityIndicator size="small" color="#4A90E2" />
+            ) : locationError ? (
+              <Text style={styles.address}>Erro ao obter localização</Text>
+            ) : (
+              <Text style={styles.address}>{address} • Alterar</Text>
+            )}
+          </TouchableOpacity>
           
           <TouchableOpacity 
             style={styles.userBadge}
@@ -173,21 +258,45 @@ export default function CustomerHome() {
               </TouchableOpacity>
             </View>
             
-            {mockCarWashes.map(carWash => (
-              <CarWashCard
-                price={'R$ 100'}
-                key={carWash.id}
-                {...carWash}
-                onPress={() => router.push(`/car-wash/${carWash.id}` as Href)}
-              />
-            ))}
+            <View style={styles.gridWrapper}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.gridContainer}
+              >
+                {Array.from({ length: Math.ceil(mockCarWashes.length / 4) }).map((_, groupIndex) => (
+                  <View key={groupIndex} style={styles.gridGroup}>
+                    {mockCarWashes.slice(groupIndex * 4, groupIndex * 4 + 4).map((carWash, index) => (
+                      <View key={carWash.id} style={[
+                        styles.gridItem,
+                        index % 2 === 0 ? styles.leftItem : styles.rightItem
+                      ]}>
+                        <CarWashCard
+                          price={'R$ 100'}
+                          {...carWash}
+                          onPress={() => router.push(`/car-wash/${carWash.id}` as Href)}
+                        />
+                      </View>
+                    ))}
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
           </View>
 
-          <HistoryPreview
-            lastOrder={mockLastOrder}
-            onPress={() => router.push('/order-history' as Href)}
-          />
+          <View style={styles.historyPreviewContainer}>
+            <HistoryPreview
+              lastOrder={mockLastOrder}
+              onPress={() => router.push('/order-history' as Href)}
+            />
+          </View>
         </ScrollView>
+
+        <AddressEditor
+          visible={isAddressEditorVisible}
+          onClose={() => setIsAddressEditorVisible(false)}
+          onSave={handleSaveAddress}
+        />
       </View>
     </SafeAreaView>
   );
@@ -318,5 +427,29 @@ const styles = StyleSheet.create({
   seeAll: {
     color: '#4A90E2',
     fontSize: 14,
+  },
+  gridWrapper: {
+    height: 400, // Altura para 2 linhas
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 4,
+  },
+  gridGroup: {
+    width: 215, // Largura para 2 itens
+    marginRight: 8,
+  },
+  gridItem: {
+    width: 180,
+    marginBottom: 12,
+  },
+  leftItem: {
+    marginRight: 8,
+  },
+  rightItem: {
+    marginRight: 0,
+  },
+  historyPreviewContainer: {
+    marginTop: 24,
   },
 }); 

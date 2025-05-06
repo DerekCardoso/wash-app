@@ -26,7 +26,11 @@ async function deleteUserByEmail(email: string) {
     await getAuth().deleteUser(user.uid);
     console.log(`Usuário ${email} deletado com sucesso!`);
   } catch (error) {
-    console.error('Erro ao deletar usuário:', error);
+    if (error instanceof Error) {
+      console.error('Erro ao deletar usuário:', error.message);
+    } else {
+      console.error('Erro ao deletar usuário:', error);
+    }
   }
 }
 

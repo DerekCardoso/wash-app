@@ -104,7 +104,6 @@ export function PhoneInput({ value, onChangeText, error }: PhoneInputProps) {
 
       <CountryPicker
         show={show}
-        // @ts-ignore
         pickerButtonOnPress={handleCountrySelect}
         onBackdropPress={() => setShow(false)}
         style={{

@@ -102,7 +102,7 @@ export default function Register() {
               name="name"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  placeholder="Nome completo"
+        placeholder="Nome completo"
                   value={value}
                   onChangeText={onChange}
                   error={errors.name?.message}
@@ -123,8 +123,8 @@ export default function Register() {
                     emailValidation.validate(text);
                   }}
                   error={errors.email?.message}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
+        keyboardType="email-address"
+        autoCapitalize="none"
                   onBlur={onBlur}
                   validation={value.length > 2 ? {
                     icon: emailValidation.getStatusIcon(emailValidation.validation.status),
@@ -156,7 +156,7 @@ export default function Register() {
                   value={value}
                   onChangeText={onChange}
                   error={errors.password?.message}
-                  secureTextEntry
+        secureTextEntry
                 />
               )}
             />
@@ -197,9 +197,9 @@ export default function Register() {
                   Política de Privacidade
                 </Text>
               </Text>
-            </View>
-
-            <Button
+      </View>
+      
+      <Button
               title="Cadastrar"
               onPress={handleSubmit(onSubmit)}
               loading={isSubmitting}
@@ -237,8 +237,8 @@ export default function Register() {
               message={toastMessage}
               type={toastType}
               onClose={() => setShowToast(false)}
-            />
-          </View>
+      />
+    </View>
         )}
       </View>
     </SafeAreaView>

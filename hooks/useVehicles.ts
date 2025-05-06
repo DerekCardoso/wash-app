@@ -19,9 +19,10 @@ export const useVehicles = () => {
       });
 
       return vehicleRef.id;
-    } catch (err) {
-      setError('Erro ao adicionar veículo');
-      throw err;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao adicionar veículo';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -34,9 +35,10 @@ export const useVehicles = () => {
     try {
       const vehicleRef = doc(db, 'vehicles', vehicleId);
       await updateDoc(vehicleRef, data);
-    } catch (err) {
-      setError('Erro ao atualizar veículo');
-      throw err;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar veículo';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -52,9 +54,10 @@ export const useVehicles = () => {
         throw new Error('Veículo não encontrado');
       }
       return vehicleDoc.data() as Vehicle;
-    } catch (err) {
-      setError('Erro ao buscar veículo');
-      throw err;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao buscar veículo';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }

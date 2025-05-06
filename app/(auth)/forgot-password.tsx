@@ -7,6 +7,7 @@ import { Logo } from '@/components/Logo';
 import { Toast } from '@/components/Toast';
 import { SubmissionModal } from '@/components/SubmissionModal';
 import { useValidation } from '@/hooks/useValidation';
+import { useAuth } from '@/hooks/useAuth';
 import { globalStyles } from '@/app/styles/global';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -15,6 +16,7 @@ const validateEmail = (email: string) => emailRegex.test(email);
 
 export default function ForgotPassword() {
   const router = useRouter();
+  const { resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -35,8 +37,7 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      // TODO: Implementar envio de e-mail de redefinição
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulação
+      await resetPassword(email);
       setShowModal(true);
     } catch (error: any) {
       let message = 'Erro ao enviar e-mail';
@@ -48,6 +49,12 @@ export default function ForgotPassword() {
         case 'auth/too-many-requests':
           message = 'Muitas tentativas. Tente mais tarde';
           break;
+        case 'auth/invalid-email':
+          message = 'E-mail inválido';
+          break;
+        case 'auth/network-request-failed':
+          message = 'Erro de conexão. Verifique sua internet';
+          break;
       }
 
       setToastMessage(message);
@@ -56,7 +63,7 @@ export default function ForgotPassword() {
     } finally {
       setLoading(false);
     }
-  }, [email, emailValidation.validation.status]);
+  }, [email, emailValidation.validation.status, resetPassword]);
 
   const handleModalClose = () => {
     setShowModal(false);

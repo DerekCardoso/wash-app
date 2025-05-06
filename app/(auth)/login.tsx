@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthContext } from '../providers/AuthProvider';
 import { FontAwesome } from '@expo/vector-icons';
@@ -41,22 +41,14 @@ export default function Login() {
     try {
       await login(email, password);
       router.replace('/(customer)/home');
-    } catch (error: any) {
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        showErrorToast('Email ou senha inválidos');
-        setErrors({
-          ...errors,
-          email: 'Email ou senha inválidos',
-          password: 'Email ou senha inválidos',
-        });
-      } else {
-        showErrorToast('Erro ao fazer login');
-        setErrors({
-          ...errors,
-          email: 'Erro ao fazer login',
-          password: 'Erro ao fazer login',
-        });
-      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login';
+      showErrorToast(errorMessage);
+      setErrors({
+        ...errors,
+        email: errorMessage,
+        password: errorMessage,
+      });
     } finally {
       setLoading(false);
     }
@@ -74,84 +66,94 @@ export default function Login() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Logo size="large" />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <Logo size="large" />
 
-        {showToast && (
-          <Toast
-            message={toastMessage}
-            type={toastType}
-            onClose={() => setShowToast(false)}
-          />
-        )}
+            {showToast && (
+              <Toast
+                message={toastMessage}
+                type={toastType}
+                onClose={() => setShowToast(false)}
+              />
+            )}
 
-        <View style={styles.formContainer}>
-          {useAuthContext()?.error && <Text style={[styles.errorText, globalStyles.text]}>{useAuthContext().error}</Text>}
+            <View style={styles.formContainer}>
+              {useAuthContext()?.error && <Text style={[styles.errorText, globalStyles.text]}>{useAuthContext().error}</Text>}
 
-          <Input
-            placeholder="Digite seu E-mail..."
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              setErrors({ ...errors, email: '' });
-            }}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-            onBlur={() => {
-              if (email && !validateEmail(email)) {
-                setErrors({ ...errors, email: 'Email inválido' });
-              }
-            }}
-          />
+              <Input
+                placeholder="Digite seu E-mail..."
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  setErrors({ ...errors, email: '' });
+                }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                error={errors.email}
+                onBlur={() => {
+                  if (email && !validateEmail(email)) {
+                    setErrors({ ...errors, email: 'Email inválido' });
+                  }
+                }}
+              />
 
-          <Input
-            placeholder="Digite sua senha..."
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setErrors({ ...errors, password: '' });
-            }}
-            secureTextEntry
-            error={errors.password}
-          />
+              <Input
+                placeholder="Digite sua senha..."
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setErrors({ ...errors, password: '' });
+                }}
+                secureTextEntry
+                error={errors.password}
+              />
 
-          <TouchableOpacity
-            style={styles.forgotPassword}
-            onPress={() => router.push('/(auth)/forgot-password')}
-          >
-            <Text style={[styles.forgotPasswordText, globalStyles.textMedium]}>
-              Esqueceu sua senha?
-            </Text>
-          </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.forgotPassword}
+                onPress={() => router.push('/(auth)/forgot-password')}
+              >
+                <Text style={[styles.forgotPasswordText, globalStyles.textMedium]}>
+                  Esqueceu sua senha?
+                </Text>
+              </TouchableOpacity>
 
-          <Button
-            title={loading ? <ActivityIndicator color="#fff" /> : "Entrar"}
-            onPress={handleLogin}
-            disabled={!isFormValid() || loading}
-          />
+              <Button
+                title={loading ? <ActivityIndicator color="#fff" /> : "Entrar"}
+                onPress={handleLogin}
+                disabled={!isFormValid() || loading}
+              />
 
-          <Text style={[styles.orText, globalStyles.text]}>Ou faça login com</Text>
+              <Text style={[styles.orText, globalStyles.text]}>Ou faça login com</Text>
 
-          <View style={styles.socialButtons}>
-            <TouchableOpacity style={styles.socialButton}>
-              <FontAwesome name="google" size={24} color="#DB4437" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton}>
-              <FontAwesome name="facebook" size={24} color="#4267B2" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton}>
-              <FontAwesome name="apple" size={24} color="#000" />
-            </TouchableOpacity>
+              <View style={styles.socialButtons}>
+                <TouchableOpacity style={styles.socialButton}>
+                  <FontAwesome name="google" size={24} color="#DB4437" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  <FontAwesome name="facebook" size={24} color="#4267B2" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  <FontAwesome name="apple" size={24} color="#000" />
+                </TouchableOpacity>
+              </View>
+
+              <NavLink 
+                text="Não possui uma conta?"
+                linkText="Cadastre-se"
+                route="/(auth)/register"
+              />
+            </View>
           </View>
-
-          <NavLink 
-            text="Não possui uma conta?"
-            linkText="Cadastre-se"
-            route="/(auth)/register"
-          />
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -164,6 +166,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   formContainer: {
     paddingHorizontal: 20,

@@ -32,4 +32,4 @@ export const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
-export type RegisterFormData = z.infer<typeof registerSchema>; 
+export type RegisterData = z.infer<typeof registerSchema>; 

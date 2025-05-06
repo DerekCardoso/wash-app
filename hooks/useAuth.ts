@@ -113,21 +113,23 @@ export function useAuth() {
       setUser(appUser);
       setSuccess('Cadastro realizado com sucesso!');
       return appUser;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro detalhado:', error);
       
       let errorMessage = 'Erro ao realizar cadastro';
       
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'Este e-mail já está em uso';
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'E-mail inválido';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'A senha deve ter pelo menos 8 caracteres';
-      } else if (error.code === 'auth/network-request-failed') {
-        errorMessage = 'Erro de conexão. Verifique sua internet';
-      } else if (error.message) {
-        errorMessage = error.message;
+      if (error instanceof Error) {
+        if (error.message.includes('email-already-in-use')) {
+          errorMessage = 'Este e-mail já está em uso';
+        } else if (error.message.includes('invalid-email')) {
+          errorMessage = 'E-mail inválido';
+        } else if (error.message.includes('weak-password')) {
+          errorMessage = 'A senha deve ter pelo menos 8 caracteres';
+        } else if (error.message.includes('network-request-failed')) {
+          errorMessage = 'Erro de conexão. Verifique sua internet';
+        } else {
+          errorMessage = error.message;
+        }
       }
       
       setError(errorMessage);
