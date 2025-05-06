@@ -73,7 +73,6 @@ async function checkAndCreateUsers() {
     if (error instanceof Error) {
       console.error('Detalhes do erro:', {
         message: error.message,
-        code: (error as any).code,
         stack: error.stack
       });
     }

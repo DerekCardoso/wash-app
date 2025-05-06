@@ -27,7 +27,11 @@ export default function OwnerRegisterScreen() {
       });
       // O redirecionamento será feito automaticamente pelo AuthProvider
     } catch (error) {
-      // O erro já é tratado no hook
+      if (error instanceof Error) {
+        Alert.alert('Erro', error.message);
+      } else {
+        Alert.alert('Erro', 'Ocorreu um erro ao realizar o cadastro');
+      }
     }
   };
 

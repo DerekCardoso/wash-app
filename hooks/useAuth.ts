@@ -99,7 +99,7 @@ export function useAuth() {
         name,
         email,
         userType,
-        companyName,
+        ...(userType === 'owner' ? { companyName } : {}),
         createdAt: new Date()
       });
       
@@ -113,21 +113,23 @@ export function useAuth() {
       setUser(appUser);
       setSuccess('Cadastro realizado com sucesso!');
       return appUser;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro detalhado:', error);
       
       let errorMessage = 'Erro ao realizar cadastro';
       
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'Este e-mail já está em uso';
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'E-mail inválido';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'A senha deve ter pelo menos 8 caracteres';
-      } else if (error.code === 'auth/network-request-failed') {
-        errorMessage = 'Erro de conexão. Verifique sua internet';
-      } else if (error.message) {
-        errorMessage = error.message;
+      if (error instanceof Error) {
+        if (error.message.includes('email-already-in-use')) {
+          errorMessage = 'Este e-mail já está em uso';
+        } else if (error.message.includes('invalid-email')) {
+          errorMessage = 'E-mail inválido';
+        } else if (error.message.includes('weak-password')) {
+          errorMessage = 'A senha deve ter pelo menos 8 caracteres';
+        } else if (error.message.includes('network-request-failed')) {
+          errorMessage = 'Erro de conexão. Verifique sua internet';
+        } else {
+          errorMessage = error.message;
+        }
       }
       
       setError(errorMessage);
@@ -143,7 +145,20 @@ export function useAuth() {
       setSuccess(null);
       setLoading(true);
 
-      await signInWithEmailAndPassword(auth, email, password);
+      const { user: firebaseUser } = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Buscar dados do usuário no Firestore
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUser({
+          id: firebaseUser.uid,
+          email: firebaseUser.email!,
+          name: userData.name,
+          userType: userData.userType,
+        });
+      }
+      
       setSuccess('Login realizado com sucesso!');
     } catch (error: any) {
       let errorMessage = 'Erro ao realizar login';

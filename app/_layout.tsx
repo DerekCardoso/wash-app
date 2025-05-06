@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import 'react-native-reanimated';
 import AuthProvider from './providers/AuthProvider';
 import { CustomHeader } from '@/components/CustomHeader';
@@ -36,24 +37,32 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
         >
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen 
-            name="(customer)" 
-            options={{ 
-              header: () => <CustomHeader title="Wash - Cliente" />
-            }} 
-          />
-          <Stack.Screen 
-            name="(owner)" 
-            options={{ headerShown: false }} 
-          />
-        </Stack>
-        <StatusBar style="auto" />
+          <ScrollView 
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            >
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen 
+                name="(customer)" 
+                options={{ headerShown: false }} 
+              />
+              <Stack.Screen 
+                name="(owner)" 
+                options={{ headerShown: false }} 
+              />
+            </Stack>
+            <StatusBar style="auto" />
+          </ScrollView>
+        </KeyboardAvoidingView>
       </ThemeProvider>
     </AuthProvider>
   );

@@ -1,156 +1,245 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, Dimensions, ActivityIndicator } from 'react-native';
-import { Link, router } from 'expo-router';
-import { useState } from 'react';
-import { useAuthContext } from '../providers/AuthProvider';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
+import { Logo } from '@/components/Logo';
+import { Toast } from '@/components/Toast';
+import { PhoneInput } from '@/components/PhoneInput';
+import { useAuth } from '@/hooks/useAuth';
+import { useValidation } from '@/hooks/useValidation';
 import { globalStyles } from '@/app/styles/global';
+import { registerSchema, type RegisterFormData } from '@/schemas/register';
+import { Checkbox } from '@/components/Checkbox';
 
-const { width } = Dimensions.get('window');
+const emailRegex = /.+@.+\..+/;
+const validateEmail = (email: string) => emailRegex.test(email);
 
 export default function Register() {
+  const router = useRouter();
+  const { register } = useAuth();
+  const [showToast, setShowToast] = React.useState(false);
+  const [toastMessage, setToastMessage] = React.useState('');
+  const [toastType, setToastType] = React.useState<'success' | 'error'>('success');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const { register, loading } = useAuthContext() ?? {};
+  const [phone, setPhone] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [termsError, setTermsError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const validateForm = () => {
-    if (!name.trim()) {
-      setError('Por favor, informe seu nome');
-      return false;
-    }
-    if (!email.trim()) {
-      setError('Por favor, informe seu e-mail');
-      return false;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Por favor, informe um e-mail válido');
-      return false;
-    }
-    if (!password) {
-      setError('Por favor, informe sua senha');
-      return false;
-    }
-    if (password.length < 8) {
-      setError('A senha deve ter pelo menos 8 caracteres');
-      return false;
-    }
-    if (password !== confirmPassword) {
-      setError('As senhas não coincidem');
-      return false;
-    }
-    return true;
+  const emailValidation = useValidation(validateEmail);
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
+
+  const passwordsMatch = password === confirmPassword && password.length > 0;
+
+  const showSuccessToast = (message: string) => {
+    setToastMessage(message);
+    setToastType('success');
+    setShowToast(true);
   };
 
-  const handleRegister = async () => {
-    try {
-      setError(null);
-      
-      if (!validateForm()) {
-        return;
-      }
+  const showErrorToast = (message: string) => {
+    setToastMessage(message);
+    setToastType('error');
+    setShowToast(true);
+  };
 
-      if (register) {
-        await register({
-          email,
-          password,
-          name,
-          userType: 'customer'
-        });
+  const onSubmit = async (data: RegisterFormData) => {
+    if (!acceptTerms) {
+      setTermsError('Você precisa aceitar os termos e condições');
+      return;
+    }
+
+    try {
+      await register({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        userType: 'customer',
+      });
+      showSuccessToast('Conta criada com sucesso!');
+      setTimeout(() => {
         router.replace('/(customer)/home');
-      }
+      }, 1500);
     } catch (error: any) {
-      console.error('Erro no registro:', error);
-      setError(error.message || 'Erro ao realizar cadastro');
+      showErrorToast(error.message || 'Erro ao criar conta');
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('../../assets/images/logo azul.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Logo size="large" />
 
-        <View style={styles.formContainer}>
-          {error && (
-            <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={20} color="#dc3545" style={styles.errorIcon} />
-              <Text style={[styles.errorText, globalStyles.text]}>{error}</Text>
+          <View style={styles.formContainer}>
+            <Controller
+              control={control}
+              name="name"
+              render={({ field: { onChange, value } }) => (
+                <Input
+        placeholder="Nome completo"
+                  value={value}
+                  onChangeText={onChange}
+                  error={errors.name?.message}
+                  autoCapitalize="words"
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, value, onBlur } }) => (
+                <Input
+                  placeholder="E-mail"
+                  value={value}
+                  onChangeText={(text) => {
+                    onChange(text);
+                    emailValidation.validate(text);
+                  }}
+                  error={errors.email?.message}
+        keyboardType="email-address"
+        autoCapitalize="none"
+                  onBlur={onBlur}
+                  validation={value.length > 2 ? {
+                    icon: emailValidation.getStatusIcon(emailValidation.validation.status),
+                    message: emailValidation.validation.message,
+                    color: emailValidation.getStatusColor(emailValidation.validation.status),
+                  } : undefined}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="phone"
+              render={({ field: { onChange, value } }) => (
+                <PhoneInput
+                  value={value}
+                  onChangeText={onChange}
+                  error={errors.phone?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  placeholder="Senha"
+                  value={value}
+                  onChangeText={onChange}
+                  error={errors.password?.message}
+        secureTextEntry
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="confirmPassword"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  placeholder="Confirmar senha"
+                  value={value}
+                  onChangeText={onChange}
+                  error={errors.confirmPassword?.message}
+                  secureTextEntry
+                  validateOnBlur
+                  validation={value.length > 0 ? {
+                    icon: passwordsMatch ? '✅' : '❌',
+                    message: passwordsMatch ? 'Senhas conferem!' : 'Senhas não conferem',
+                    color: passwordsMatch ? '#4CAF50' : '#F44336',
+                  } : undefined}
+                />
+              )}
+            />
+
+            <View style={styles.termsContainer}>
+              <Checkbox
+                value={acceptTerms}
+                onValueChange={setAcceptTerms}
+                error={termsError}
+              />
+              <Text style={[globalStyles.text, styles.termsText]}>
+                Eu concordo com os{' '}
+                <Text style={styles.link} onPress={() => router.push('../terms')}>
+                  Termos de Uso
+                </Text>{' '}
+                e{' '}
+                <Text style={styles.link} onPress={() => router.push('../privacy')}>
+                  Política de Privacidade
+                </Text>
+              </Text>
+      </View>
+      
+      <Button
+              title="Cadastrar"
+              onPress={handleSubmit(onSubmit)}
+              loading={isSubmitting}
+            />
+
+            <View style={styles.loginContainer}>
+              <Text style={[globalStyles.text, styles.loginText]}>
+                Já tem uma conta?{' '}
+              </Text>
+              <Text
+                style={[globalStyles.text, styles.loginLink]}
+                onPress={() => router.push('/(auth)/login')}
+              >
+                Faça login
+              </Text>
             </View>
-          )}
 
-          <TextInput
-            style={[styles.input, globalStyles.text]}
-            placeholder="Digite seu nome completo..."
-            value={name}
-            onChangeText={setName}
-            placeholderTextColor="#999"
-            autoCapitalize="words"
-          />
-
-          <TextInput
-            style={[styles.input, globalStyles.text]}
-            placeholder="Digite seu E-mail..."
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            placeholderTextColor="#999"
-          />
-
-          <TextInput
-            style={[styles.input, globalStyles.text]}
-            placeholder="Digite sua senha..."
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholderTextColor="#999"
-          />
-
-          <Text style={[styles.passwordHint, globalStyles.text]}>A senha deve ter pelo menos 8 caracteres</Text>
-
-          <TextInput
-            style={[styles.input, globalStyles.text]}
-            placeholder="Confirme sua senha..."
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-            placeholderTextColor="#999"
-          />
-
-          <TouchableOpacity 
-            style={[styles.loginButton, loading && styles.disabledButton]}
-            onPress={handleRegister}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={[styles.loginButtonText, globalStyles.textBold]}>CADASTRAR</Text>
-            )}
-          </TouchableOpacity>
-
-          <View style={styles.registerContainer}>
-            <Text style={[styles.registerText, globalStyles.text]}>Cadastre-se como </Text>
-            <TouchableOpacity onPress={() => router.replace('/(auth)/register-owner' as any)}>
-              <Text style={[styles.registerLink, globalStyles.textBold]}>proprietário</Text>
-            </TouchableOpacity>
+            <View style={styles.registerOwnerContainer}>
+              <Text style={[globalStyles.text, styles.registerOwnerText]}>
+                É proprietário?{' '}
+              </Text>
+              <Text
+                style={[globalStyles.text, styles.registerOwnerLink]}
+                onPress={() => router.push('/(auth)/register-owner')}
+              >
+                Cadastre seu lava-rápido
+              </Text>
+            </View>
           </View>
+        </ScrollView>
 
-          <View style={styles.registerContainer}>
-            <Text style={[styles.registerText, globalStyles.text]}>Já possui uma conta? </Text>
-            <TouchableOpacity onPress={() => router.replace('/(auth)/login' as any)}>
-              <Text style={[styles.registerLink, globalStyles.textBold]}>Faça o login</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {showToast && (
+          <View style={styles.toastContainer}>
+            <Toast
+              message={toastMessage}
+              type={toastType}
+              onClose={() => setShowToast(false)}
+      />
+    </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -165,79 +254,56 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  backButton: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    zIndex: 1,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginTop: 60,
-    marginBottom: 40,
-  },
-  logo: {
-    width: width * 0.5,
-    height: width * 0.5,
-  },
-  formContainer: {
-    paddingHorizontal: 20,
-  },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffebee',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-  },
-  errorIcon: {
-    marginRight: 10,
-  },
-  errorText: {
-    color: '#dc3545',
+  scrollView: {
     flex: 1,
   },
-  input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
+  content: {
+    padding: 20,
   },
-  passwordHint: {
-    color: '#666',
-    fontSize: 14,
-    marginTop: -10,
-    marginBottom: 15,
-    paddingHorizontal: 5,
+  formContainer: {
+    gap: 16,
+    marginTop: 20,
   },
-  loginButton: {
-    backgroundColor: '#2f95dc',
-    borderRadius: 8,
-    padding: 15,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  disabledButton: {
-    opacity: 0.7,
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  registerContainer: {
+  loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
+    marginTop: 16,
   },
-  registerText: {
+  loginText: {
     color: '#666',
-    fontSize: 16,
   },
-  registerLink: {
-    color: '#2f95dc',
-    fontSize: 16,
+  loginLink: {
+    color: '#007AFF',
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  termsText: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  link: {
+    color: '#007AFF',
+  },
+  toastContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
+  registerOwnerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  registerOwnerText: {
+    color: '#666',
+    fontWeight: '700',
+  },
+  registerOwnerLink: {
+    color: '#007AFF',
   },
 });
